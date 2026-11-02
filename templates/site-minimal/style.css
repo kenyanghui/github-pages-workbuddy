@@ -1,0 +1,64 @@
+/* 极简站点样式：无框架、无字体依赖、手机优先 */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  color: #1d1d1f;
+  background: #fbfbfd;
+  line-height: 1.8;
+}
+.wrap { max-width: 680px; margin: 0 auto; padding: 48px 20px 64px; }
+
+.hero h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: .5px; }
+.tagline { color: #6e6e73; font-size: 16px; margin: 0 0 10px; }
+.meta { color: #86868b; font-size: 13px; margin: 0; }
+
+.sec-title {
+  font-size: 15px; color: #6e6e73; font-weight: 600;
+  margin: 44px 0 14px; padding-bottom: 8px;
+  border-bottom: 1px solid #e8e8ed;
+}
+
+.post-list { display: grid; gap: 14px; }
+.post-card {
+  background: #fff; border: 1px solid #ececf0; border-radius: 14px;
+  padding: 18px 20px; transition: box-shadow .2s;
+}
+.post-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+.post-link { font-size: 17px; font-weight: 650; color: #1d1d1f; text-decoration: none; }
+.post-link:hover { color: #0066cc; }
+.post-summary { color: #6e6e73; font-size: 14px; margin: 6px 0 4px; }
+.post-date { color: #a1a1a6; font-size: 12.5px; margin: 0; }
+.empty { color: #86868b; font-size: 14.5px; }
+
+/* 文章页 */
+.article article { background: #fff; border: 1px solid #ececf0; border-radius: 16px; padding: 32px 28px; }
+.top { margin-bottom: 18px; }
+.top a { color: #0066cc; text-decoration: none; font-size: 14px; }
+.top a:hover { text-decoration: underline; }
+.post-title { font-size: 26px; line-height: 1.4; margin: 0 0 6px; }
+.post-meta { color: #a1a1a6; font-size: 13px; margin: 0 0 24px; }
+.article h2 { font-size: 20px; margin: 30px 0 10px; }
+.article h3 { font-size: 17px; margin: 24px 0 8px; }
+.article h4 { font-size: 15.5px; margin: 20px 0 6px; }
+.article p { font-size: 15.5px; }
+.article ul { padding-left: 22px; }
+.article li { font-size: 15.5px; margin-bottom: 6px; }
+.article blockquote {
+  margin: 16px 0; padding: 10px 16px; border-left: 3px solid #b3b3ba;
+  background: #f7f7fa; color: #494950; border-radius: 0 8px 8px 0;
+}
+.article pre { background: #f6f8fa; padding: 14px; border-radius: 10px; overflow-x: auto; font-size: 13.5px; }
+.article code { font-family: Menlo, Consolas, monospace; }
+.cta {
+  margin-top: 30px; padding: 12px 16px; background: #f2f6ff;
+  border-radius: 10px; font-size: 14px; color: #3c4a6b;
+}
+
+.foot { margin-top: 56px; color: #a1a1a6; font-size: 12.5px; text-align: center; }
+
+@media (max-width: 480px) {
+  .wrap { padding-top: 32px; }
+  .hero h1 { font-size: 25px; }
+  .article article { padding: 24px 18px; }
+}

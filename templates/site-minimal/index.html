@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的网站</title>
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<script src="posts.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <h1 id="site-name">…</h1>
+    <p id="tagline" class="tagline"></p>
+    <p class="meta" id="site-meta"></p>
+  </header>
+
+  <section>
+    <h2 class="sec-title">最新文章</h2>
+    <div id="post-list" class="post-list">
+      <p class="empty">还没有文章。对 WorkBuddy 说「用这段素材帮我在网站上发一篇文章」开始。</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p id="foot-line"></p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var cfg = window.SITE_CONFIG || {};
+  document.title = cfg.site_name || '我的网站';
+  document.getElementById('site-name').textContent = cfg.site_name || '我的网站';
+  document.getElementById('tagline').textContent = cfg.tagline || '';
+
+  var bits = [];
+  if (cfg.author) bits.push(cfg.author);
+  if (cfg.github_user && String(cfg.github_user).indexOf('your-') !== 0) {
+    bits.push('GitHub: ' + cfg.github_user);
+  }
+  document.getElementById('site-meta').textContent = bits.join(' · ');
+
+  var foot = [];
+  if (cfg.wechat_account) foot.push('微信搜索「' + cfg.wechat_account + '」看更多');
+  foot.push('由 GitHub Pages 免费托管');
+  document.getElementById('foot-line').textContent = foot.join(' · ');
+
+  var posts = window.POSTS || [];
+  var box = document.getElementById('post-list');
+  if (posts.length) {
+    box.innerHTML = posts.map(function (p) {
+      return '<article class="post-card">'
+        + '<a class="post-link" href="' + p.url + '">' + p.title + '</a>'
+        + '<p class="post-summary">' + (p.summary || '') + '</p>'
+        + '<p class="post-date">' + p.date + '</p>'
+        + '</article>';
+    }).join('');
+  }
+})();
+</script>
+</body>
+</html>
