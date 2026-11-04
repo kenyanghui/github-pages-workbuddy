@@ -24,9 +24,10 @@ prerequisites:
 
 ## ⚡ 首次使用：5 分钟
 
-**第一步：初始化网站**
+**第一步：初始化网站（二选一）**
 
-对 WorkBuddy 说「**帮我建个人网站**」，或终端跑：
+- **路径 A · fork 讲师站（第二期课堂主线）**：对 WorkBuddy 说「**fork 讲师站**」或 `python3 scripts/fork_chaiai.py --user 你的用户名`——把 chai.aibay.asia 源码仓 fork 成你的，六大模块/材料回看/巡检全带走，五步 15 分钟。详见 `references/fork-chaiai.md`。
+- **路径 B · 从零最小站**：对 WorkBuddy 说「**帮我建个人网站**」，或终端跑：
 
 ```bash
 python3 scripts/setup_wizard.py
@@ -47,6 +48,7 @@ python3 scripts/setup_wizard.py
 
 | 任务意图 | 路由到 |
 |---------|--------|
+| fork 讲师站 / 换装 / 改六大模块 | `scripts/fork_chaiai.py` + `references/fork-chaiai.md`（**fork 主线必读**：五步表、品牌换装红线、信息流控制、ima/号联动不受影响） |
 | 建站 / 重新初始化 | `scripts/setup_wizard.py`（`--demo` 可先生成演示站） |
 | 写新文章 / 素材变文章 | `scripts/new_post.py`（读 `references/write.md` 再执行） |
 | 发布 / 更新网站 / 自定义域名 | `references/publish.md`（双通道+DNS+验证清单） |

@@ -29,7 +29,17 @@ git clone https://github.com/kenyanghui/rsi-ima-workbuddy-wechat-web ~/.workbudd
 
 第一期已配过 IMA / 公众号 API 凭证（`~/.config/ima/`、`~/.config/wechat/`）的同学：全部直接复用，无需重配。
 
-## 第 2 步：生成你的网站
+## 第 2 步：生成你的网站（二选一）
+
+**路径 A · fork 讲师站（课堂主线，推荐）**：把讲师站 chai.aibay.asia 的源码仓 fork 成你的——六大模块、工作坊详情、材料回看、每日巡检全部带走，再换名字换内容：
+
+1. 浏览器开 https://github.com/kenyanghui/chaiAI/fork → Create fork（全默认）
+2. clone 你的 fork，对 WorkBuddy 说「**把站换成我的**」（站名/署名/导航/people）
+3. push 后等 Actions 1–5 分钟，开 `https://用户名.github.io/chaiAI/`
+
+完整五步表与换装红线见 `references/fork-chaiai.md`。
+
+**路径 B · 从零最小站**：
 
 对 WorkBuddy 说：
 

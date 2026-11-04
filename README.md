@@ -25,6 +25,7 @@
 
 | 能力 | 组件 | 状态 |
 |---|---|---|
+| **fork 讲师站（v3 主线）** | `scripts/fork_chaiai.py` 五步向导 + `references/fork-chaiai.md`（fork chaiAI→换装→控信息流→ima/号联动不受影响） | 已交付（v3） |
 | 建站 | `scripts/setup_wizard.py` 向导 + `templates/site-minimal` 单文件模板（config.js/index.html/posts.js/style.css，零依赖双击可开） | 已交付（v1） |
 | 发文 | `scripts/new_post.py "标题"` 生成文章 → push main → Actions 自动上线 | 已交付（v1） |
 | 诊断 | `scripts/diagnose.py` 环境自检（技能是否装好、依赖是否齐） | 已交付（v1） |
@@ -51,7 +52,9 @@
 ```bash
 # 0. 前置：python3（必需），git（可选），ima-mcp 连接器（可选）
 # 1. 安装技能（详见 SETUP.md）
-# 2. 建出你的第一个站（5 分钟零依赖上线）
+# 2. 二期课堂主线：fork 讲师站（15 分钟，六大模块/巡检全带走）
+python3 scripts/fork_chaiai.py --user 你的用户名
+#    或从零建最小站（5 分钟零依赖上线）
 python3 scripts/setup_wizard.py
 # 3. 写第一篇
 python3 scripts/new_post.py "我的第一篇拆书笔记"
@@ -60,7 +63,7 @@ python3 scripts/site_check.py
 python3 scripts/site_check.py --json   # 机器格式，供 CI 用
 ```
 
-WorkBuddy 用户直接说「**帮我建个人网站**」「**给站点做个体检**」即可，技能路由见 SKILL.md。
+WorkBuddy 用户直接说「**fork 讲师站**」「**把站换成我的**」「**帮我建个人网站**」「**给站点做个体检**」即可，技能路由见 SKILL.md。
 
 ## 仓库结构
 
