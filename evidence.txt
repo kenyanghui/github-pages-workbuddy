@@ -1,66 +1,72 @@
 # evidence — site_check.py 真实运行证据
-运行时间(UTC): 2026-11-04 02:15:03  主机: iZwz93br1eizasd4tagz0pZ
 
-## 第一次：人类可读模式
+> **证据纪律**（借鉴 loong-workflow「外部写入回读验证 + 展示真实性」两规）：
+> ① 每个证据块以实际 exit 码标注 `结论: pass|fail`，块内原文逐字保留、不删不改；
+> ② fail 块不丢弃——它可能是瞬时抖动的实证，按「状态定性先复测」处置；
+> ③ 文件末尾 `VERDICT` 行只描述**最后一轮**整体结论，必须与最后一轮实际输出一致。
+> （反例存档：本文件旧版末尾曾挂 `EVIDENCE-PASS` 单标记，而中间 JSON 块实际
+> overall=fail——标记与内容脱节，读者无法判断哪个块有效。已修复为逐块标注。）
+
+## 运行环境
+
+- 时间(UTC)：2026-11-04 03:31:23 / 03:31:30（两轮间隔 7s）
+- 主机：iZwz93br1eizasd4tagz0pZ（本机实跑）
+- 命令：`python3 scripts/site_check.py`（人类可读模式）
+
+## 第 1 轮（2026-11-04 11:31:23 北京）— 结论: pass
+
 ```
-chai 站体检  2026-11-04 10:15:11
+chai 站体检  2026-11-04 11:31:23
 ----------------------------------------------------------------
- ✓ chai-home           1099ms  主站首页 200 且含 <title>（1269B）
- ✓ chailive-home       2684ms  chailive 首页 200（44631B）
- ✓ chailive-books      2407ms  chailive 书目页 200 且含 riaComplete（51821B）
- ✓ chaibuddy-home       582ms  chaibuddy 首页 200（10336B）
- ✓ chaibuddy-people    1098ms  chaibuddy 数据 people.json 200（37630B）
- ✓ ai-proxy-ping         35ms  AI 代理健康检查 200 且 ok:true（38B）
+ ✓ chai-home           1000ms  主站首页 200 且含 <title>（1269B）
+ ✓ chailive-home       1380ms  chailive 首页 200（44631B）
+ ✓ chailive-books      1880ms  chailive 书目页 200 且含 riaComplete（51821B）
+ ✓ chaibuddy-home       932ms  chaibuddy 首页 200（10336B）
+ ✓ chaibuddy-people    1256ms  chaibuddy 数据 people.json 200（37630B）
+ ✓ ai-proxy-ping        614ms  AI 代理健康检查 200 且 ok:true（38B）
 ----------------------------------------------------------------
  结果: PASS （6/6 项通过）
 exit=0
 ```
 
-## 第二次：--json 模式
+## 第 2 轮（2026-11-04 11:31:30 北京）— 结论: pass
+
+```
+chai 站体检  2026-11-04 11:31:30
+----------------------------------------------------------------
+ ✓ chai-home            698ms  主站首页 200 且含 <title>（1269B）
+ ✓ chailive-home       2381ms  chailive 首页 200（44631B）
+ ✓ chailive-books      1142ms  chailive 书目页 200 且含 riaComplete（51821B）
+ ✓ chaibuddy-home       788ms  chaibuddy 首页 200（10336B）
+ ✓ chaibuddy-people    1688ms  chaibuddy 数据 people.json 200（37630B）
+ ✓ ai-proxy-ping         91ms  AI 代理健康检查 200 且 ok:true（38B）
+----------------------------------------------------------------
+ 结果: PASS （6/6 项通过）
+exit=0
+```
+
+## 历史证据（2026-11-04 02:15 UTC）— 结论: fail（5/6）
+
+> SSL 握手抖动致 chaibuddy-people 超时（20.4s > 15s TIMEOUT）。按「状态定性先复测」
+> 纪律复测后恢复 pass——定性为**瞬时网络抖动**，非站点故障。原始 JSON 摘录：
+
 ```json
 {
   "ts": 1793758535688,
   "overall": "fail",
   "checks": [
-    {
-      "id": "chai-home",
-      "ok": true,
-      "ms": 787,
-      "detail": "主站首页 200 且含 <title>（1269B）"
-    },
-    {
-      "id": "chailive-home",
-      "ok": true,
-      "ms": 1300,
-      "detail": "chailive 首页 200（44631B）"
-    },
-    {
-      "id": "chailive-books",
-      "ok": true,
-      "ms": 700,
-      "detail": "chailive 书目页 200 且含 riaComplete（51821B）"
-    },
-    {
-      "id": "chaibuddy-home",
-      "ok": true,
-      "ms": 582,
-      "detail": "chaibuddy 首页 200（10336B）"
-    },
-    {
-      "id": "chaibuddy-people",
-      "ok": false,
-      "ms": 20392,
-      "detail": "异常: URLError: <urlopen error _ssl.c:989: The handshake operation timed out>"
-    },
-    {
-      "id": "ai-proxy-ping",
-      "ok": true,
-      "ms": 66,
-      "detail": "AI 代理健康检查 200 且 ok:true（38B）"
-    }
+    { "id": "chai-home", "ok": true, "ms": 787, "detail": "主站首页 200 且含 <title>（1269B）" },
+    { "id": "chailive-home", "ok": true, "ms": 1300, "detail": "chailive 首页 200（44631B）" },
+    { "id": "chailive-books", "ok": true, "ms": 700, "detail": "chailive 书目页 200 且含 riaComplete（51821B）" },
+    { "id": "chaibuddy-home", "ok": true, "ms": 582, "detail": "chaibuddy 首页 200（10336B）" },
+    { "id": "chaibuddy-people", "ok": false, "ms": 20392, "detail": "异常: URLError: <urlopen error _ssl.c:989: The handshake operation timed out>" },
+    { "id": "ai-proxy-ping", "ok": true, "ms": 66, "detail": "AI 代理健康检查 200 且 ok:true（38B）" }
   ]
 }
 exit=1
 ```
 
-EVIDENCE-PASS
+> 这条历史记录同时是 site-ops.yml「单轮 fail 先重跑再定性」的实证：GitHub Actions
+> 出口 IP 与常用网段不同，偶发抖动概率更高，CI 侧重跑一次再触发告警。
+
+VERDICT: PASS —— 2026-11-04 03:31 UTC 两轮 6/6；02:15 UTC 历史 fail 轮已复测恢复

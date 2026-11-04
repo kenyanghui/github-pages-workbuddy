@@ -19,19 +19,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 站点体检（site_check）
+      - name: 站点体检（第一轮，site_check --retry）
         id: sitecheck
-        run: |
-          python3 scripts/site_check.py --json | tee check-result.json
-          echo "result=$(python3 -c 'import json;print(json.load(open("check-result.json"))["overall"])')" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+        run: python3 scripts/site_check.py --retry --json | tee check-result.json
 
-      - name: 体检告警（失败时）
+      - name: 二轮复测（首轮 fail 才跑，RULES R3）
+        id: rerun
         if: steps.sitecheck.outcome == 'failure'
         run: |
-          echo "::error title=站点体检失败::每日 09:17（北京）体检未全绿，请查看上方 check-result.json 定位坏项"
+          echo "首轮 fail，隔 60s 二轮复测再定性……"
+          sleep 60
+          python3 scripts/site_check.py --retry --json | tee check-result-rerun.json
+
+      - name: 文档漂移防护（RULES R5）
+        if: always()
+        run: python3 guards/check_docs_drift.py
+
+      - name: 体检告警（两轮全挂才告警，RULES R3）
+        if: steps.sitecheck.outcome == 'failure' && steps.rerun.outcome != 'success'
+        run: |
+          echo "::error title=站点体检失败::首轮+二轮复测均未全绿，判定持续故障（非抖动）"
           echo "=============================================="
-          echo " ⚠️  chai 站体检有失败项 —— 修复指引："
-          echo "   1. 看 check-result.json 里 ok=false 的检查项"
-          echo "   2. 按检查项 id 对照 site_check.py 的 CHECKS 定位 URL"
-          echo "   3. 修复后手动 workflow_dispatch 复跑一次确认全绿"
+          echo " ⚠️  chai 站体检持续故障 —— 修复指引："
+          echo "   1. 看 check-result.json 与 check-result-rerun.json 里 ok=false 的检查项"
+          echo "   2. 若两轮失败项不同 → 仍疑似抖动，手动 workflow_dispatch 再复跑一轮"
+          echo "   3. 若失败项一致 → 按 id 对照 site_check.py 的 CHECKS 定位 URL 修复"
+          echo "   4. 修复后手动 workflow_dispatch 复跑一次确认全绿"
           echo "=============================================="
+          exit 1

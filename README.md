@@ -29,8 +29,10 @@
 | 建站 | `scripts/setup_wizard.py` 向导 + `templates/site-minimal` 单文件模板（config.js/index.html/posts.js/style.css，零依赖双击可开） | 已交付（v1） |
 | 发文 | `scripts/new_post.py "标题"` 生成文章 → push main → Actions 自动上线 | 已交付（v1） |
 | 诊断 | `scripts/diagnose.py` 环境自检（技能是否装好、依赖是否齐） | 已交付（v1） |
-| 站点体检 | `scripts/site_check.py` 六项只读检查，支持 `--json`（exit 0=全过，供 CI 判定） | 已交付（v2） |
-| 定时巡检 | `.github/workflows/site-ops.yml` 每日 09:17（北京时间）自动体检，失败输出中文告警块 | 已交付（v2） |
+| 站点体检 | `scripts/site_check.py` 六项只读检查，支持 `--json`（exit 0=全过，供 CI 判定）与 `--retry`（失败项隔 10s 复测一次再定性） | 已交付（v2.1） |
+| 定时巡检 | `.github/workflows/site-ops.yml` 每日 09:17（北京时间）自动体检，首轮 fail 隔 60s 二轮复测，两轮全挂才告警 | 已交付（v2.1） |
+| 文档漂移防护 | `guards/check_docs_drift.py` 六项断言（README 声称 vs 仓库实际），CI 已接线 | 已交付（v2.1） |
+| 行为规则库 | `docs/RULES.md` 六条仓规，每条注明层级与立规出处 | 已交付（v2.1） |
 | 内容产线（号侧） | 由一期仓 rsi-ima-workbuddy-wechatpub 承接 | 姊妹仓 |
 | 体检结果回流 RSI 台账 | `_rsi_ledger.md` 增量记录 | 规划中 |
 
@@ -61,6 +63,7 @@ python3 scripts/new_post.py "我的第一篇拆书笔记"
 # 4. 站点体检（默认指向 chai 站资产，可改 CHECKS 换成你的站）
 python3 scripts/site_check.py
 python3 scripts/site_check.py --json   # 机器格式，供 CI 用
+python3 scripts/site_check.py --retry  # 失败项隔 10s 复测一次再定性（防抖动误报）
 ```
 
 WorkBuddy 用户直接说「**fork 讲师站**」「**把站换成我的**」「**帮我建个人网站**」「**给站点做个体检**」即可，技能路由见 SKILL.md。
@@ -69,26 +72,39 @@ WorkBuddy 用户直接说「**fork 讲师站**」「**把站换成我的**」「
 
 ```
 rsi-ima-workbuddy-wechat-web/
-├── SKILL.md                  # WorkBuddy 技能定义 v2.0.0（触发词/别名/前置/流程）
+├── SKILL.md                  # WorkBuddy 技能定义 v2.1.0（触发词/别名/前置/流程）
 ├── SETUP.md                  # 安装向导
 ├── README.md                 # 本文件
+├── evidence.txt              # site_check 实跑证据（逐块标注结论，RULES R2 活样本）
 ├── docs/
 │   ├── GOALS.md              # 工作坊目标与验收：G1 装好技能 → G2 建出站点
 │   │                         #   → G3 跑通首篇发布 → G4 闭环体检全绿
 │   ├── CLOSED-LOOP.md        # 自动化闭环设计（库→站→号总图，对照一期九步）
-│   └── UPGRADE-v2.md         # v1 → v2 升级说明（含改名公告与 remote 切换命令）
+│   ├── UPGRADE-v2.md         # v1 → v2 升级说明（含改名公告与 remote 切换命令）
+│   ├── RULES.md              # 六条仓规 R1–R6（写后回读/证据真实/先复测/只读红线/防漂移/复盘纪律）
+│   ├── BORROWED-FROM-LOONG-WORKFLOW.md  # 机制学习笔记：从 loong-workflow 借了什么、落到哪
+│   └── retrospectives/
+│       └── TEMPLATE.md       # 复盘模板（五段式+行动项四条硬约束）
+├── guards/
+│   └── check_docs_drift.py   # 文档漂移防护：README 声称 vs 仓库实际 六项断言（R5）
 ├── scripts/
 │   ├── setup_wizard.py       # 建站向导（v1）
 │   ├── new_post.py           # 发文脚本（v1）
 │   ├── diagnose.py           # 诊断脚本（v1）
-│   └── site_check.py         # 站点体检（v2 新增）
+│   └── site_check.py         # 站点体检（v2；v2.1 加 --retry 复测定性）
 ├── templates/
 │   └── site-minimal/         # 单文件建站模板（v1）：config.js / index.html / posts.js / style.css
 └── .github/workflows/
-    └── site-ops.yml          # 每日定时体检 Actions（v2 新增）
+    └── site-ops.yml          # 每日定时体检 Actions（v2；v2.1 加二轮复测+漂移防护步）
 ```
 
 ## v1 → v2 变化一览
+
+> v2.1 增量（2026-11-04，借鉴 loong-workflow 机制，完整学习笔记见
+> [docs/BORROWED-FROM-LOONG-WORKFLOW.md](docs/BORROWED-FROM-LOONG-WORKFLOW.md)）：
+> site_check 加 `--retry` 复测定性；site-ops 加二轮复测（两轮全挂才告警）；
+> 新增 `guards/check_docs_drift.py` 漂移防护、`docs/RULES.md` 六条仓规、
+> `docs/retrospectives/TEMPLATE.md` 复盘模板；evidence.txt 重构为逐块标注结论。
 
 | 维度 | v1（github-pages-workbuddy） | v2（本仓现名） |
 |---|---|---|

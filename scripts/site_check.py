@@ -5,10 +5,14 @@
 设计原则：仅标准库、零第三方依赖、绝不写线上任何内容（体检只读红线）。
 
 用法:
-    python3 scripts/site_check.py          # 人类可读表格
-    python3 scripts/site_check.py --json   # 机器格式（供 CI / Actions 消费）
+    python3 scripts/site_check.py              # 人类可读表格
+    python3 scripts/site_check.py --json       # 机器格式（供 CI / Actions 消费）
+    python3 scripts/site_check.py --retry      # 失败项隔 10s 复测一次再定性
 
 退出码: 全部通过 exit 0，任一失败 exit 1；网络异常按 fail 记录，不崩溃。
+
+纪律依据（docs/RULES.md R3「状态定性先复测」）：瞬时抖动 ≠ 站点故障，
+单检查项失败先复测一次；复测恢复记 pass 并注明，复测仍挂才算持续故障。
 """
 
 import json
@@ -17,6 +21,7 @@ import time
 import urllib.request
 
 TIMEOUT = 15
+RETRY_DELAY = 10  # R3 复测间隔（秒）
 
 CHECKS = [
     {"id": "chai-home", "url": "https://chai.aibay.asia/", "expect": "status+title", "desc": "主站首页 200 且含 <title>"},
@@ -28,7 +33,19 @@ CHECKS = [
 ]
 
 
-def run_check(c):
+def run_check(c, retry=False):
+    res = _probe(c)
+    if retry and not res["ok"]:
+        first_err = res["detail"]
+        time.sleep(RETRY_DELAY)
+        res2 = _probe(c)
+        if res2["ok"]:
+            res = res2
+            res["detail"] = f"{res['detail']}（复测通过；首轮: {first_err}）"
+    return res
+
+
+def _probe(c):
     start = time.time()
     res = {"id": c["id"], "ok": False, "ms": 0, "detail": ""}
     try:
@@ -62,7 +79,8 @@ def run_check(c):
 
 def main():
     as_json = "--json" in sys.argv
-    results = [run_check(c) for c in CHECKS]
+    do_retry = "--retry" in sys.argv
+    results = [run_check(c, retry=do_retry) for c in CHECKS]
     overall = "pass" if all(r["ok"] for r in results) else "fail"
     if as_json:
         print(json.dumps({"ts": int(time.time() * 1000), "overall": overall, "checks": results}, ensure_ascii=False, indent=2))

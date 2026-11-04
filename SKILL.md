@@ -6,7 +6,7 @@ aliases:
   - 一库一站一号
   - 内容飞轮
 description: 第二期工作坊主仓技能：IMA 知识库 → 网站(GitHub Pages) + 公众号 + chai 站自动化工作流（「一库一站一号」飞轮）。v2 新增站点体检 site_check（6 项只读检查）与每日定时 Actions 巡检；v1 建站流水线全保留：5 分钟零依赖网站上线、素材双出口、30 天飞轮台账。Use when user mentions "建网站", "个人网站", "GitHub Pages", "上线", "一库一站一号", "网站更新", "发文章到网站", "公众号联动", "内容飞轮", "站点体检", "site_check", "定时巡检".
-version: 2.0.0
+version: 2.1.0
 platforms: [darwin, linux, win32]
 prerequisites:
   commands: [python3]
@@ -54,8 +54,10 @@ python3 scripts/setup_wizard.py
 | 发布 / 更新网站 / 自定义域名 | `references/publish.md`（双通道+DNS+验证清单） |
 | IMA 素材进出 / 公众号双出口 / 30 天飞轮 | `references/flywheel.md`（**执行联动任务前必读**） |
 | 想升级站（React/Actions/表单） | `references/blueprint-chai.md`（蓝本演进史，含全部踩坑） |
-| 体检 / 哪里坏了 | `python3 scripts/diagnose.py`（本地站）；`python3 scripts/site_check.py`（chai 站线上体检，只读） |
-| 定时巡检 / Actions | `.github/workflows/site-ops.yml`（每日 09:17 北京自动体检，详见 `docs/CLOSED-LOOP.md`） |
+| 体检 / 哪里坏了 | `python3 scripts/diagnose.py`（本地站）；`python3 scripts/site_check.py`（chai 站线上体检，只读；`--retry` 失败项复测一次再定性） |
+| 定时巡检 / Actions | `.github/workflows/site-ops.yml`（每日 09:17 北京自动体检+二轮复测+文档漂移防护，详见 `docs/CLOSED-LOOP.md`） |
+| 改文档 / 改体检项 / 改流程前 | `docs/RULES.md`（六条仓规：写后回读/证据真实/先复测/只读红线/防漂移/复盘纪律）；改完跑 `python3 guards/check_docs_drift.py` |
+| 事故复盘 / 教训沉淀 | `docs/retrospectives/TEMPLATE.md`（五段式+行动项四条硬约束；借鉴出处 `docs/BORROWED-FROM-LOONG-WORKFLOW.md`） |
 | 工作坊目标与验收 | `docs/GOALS.md`；闭环设计 `docs/CLOSED-LOOP.md`；v1→v2 升级 `docs/UPGRADE-v2.md` |
 | 兄弟技能联动（公众号 API 推草稿箱） | flywheel.md § 升级出口 |
 
