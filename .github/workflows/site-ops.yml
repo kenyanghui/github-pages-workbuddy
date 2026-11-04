@@ -22,12 +22,17 @@ jobs:
       - name: 站点体检（第一轮，site_check --retry）
         id: sitecheck
         continue-on-error: true
-        run: python3 scripts/site_check.py --retry --json | tee check-result.json
+        shell: bash
+        run: |
+          set -o pipefail  # 无此行管道只取 tee 退出码，体检失败步骤也「成功」（假成功防线）
+          python3 scripts/site_check.py --retry --json | tee check-result.json
 
       - name: 二轮复测（首轮 fail 才跑，RULES R3）
         id: rerun
         if: steps.sitecheck.outcome == 'failure'
+        shell: bash
         run: |
+          set -o pipefail
           echo "首轮 fail，隔 60s 二轮复测再定性……"
           sleep 60
           python3 scripts/site_check.py --retry --json | tee check-result-rerun.json
