@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""个人网站初始化向导 — github-pages-workbuddy
+"""个人网站初始化向导 — rsi-ima-workbuddy-wechat-web
 
 用法:
   python3 setup_wizard.py                 # 交互式，6 个问题

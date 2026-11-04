@@ -1,4 +1,4 @@
-# github-pages-workbuddy
+# rsi-ima-workbuddy-wechat-web
 
 **小白友好的 GitHub Pages 个人网站流水线**——跑在 WorkBuddy 上的技能（Skill）。
 
@@ -12,7 +12,7 @@
 ## 安装（3 分钟）
 
 ```bash
-git clone https://github.com/kenyanghui/github-pages-workbuddy ~/.workbuddy/skills/github-pages-workbuddy
+git clone https://github.com/kenyanghui/rsi-ima-workbuddy-wechat-web ~/.workbuddy/skills/rsi-ima-workbuddy-wechat-web
 ```
 
 不会用终端？看 [SETUP.md](SETUP.md) 的图文版（ZIP 下载 + 拖拽安装）。

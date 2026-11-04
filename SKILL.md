@@ -1,5 +1,5 @@
 ---
-name: github-pages-workbuddy
+name: rsi-ima-workbuddy-wechat-web
 aliases:
   - 个人网站流水线
   - GitHub建站
@@ -14,7 +14,7 @@ prerequisites:
   optional_connectors: [ima-mcp]
 ---
 
-# 个人网站流水线（github-pages-workbuddy）
+# 个人网站流水线（rsi-ima-workbuddy-wechat-web）
 
 > **一句话**：把你的 IMA 知识库变成一个打开就能看的家——免费 GitHub Pages 网站 + 公众号双出口，同一篇素材两处发。蓝本：chai.aibay.asia（第二期拆AI工作坊现场照着拆的那个站）。
 

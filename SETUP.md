@@ -8,14 +8,14 @@
 **方式一 · 终端（推荐，一行）**：
 
 ```bash
-git clone https://github.com/kenyanghui/github-pages-workbuddy ~/.workbuddy/skills/github-pages-workbuddy
+git clone https://github.com/kenyanghui/rsi-ima-workbuddy-wechat-web ~/.workbuddy/skills/rsi-ima-workbuddy-wechat-web
 ```
 
 **方式二 · 不用终端**：
 
-1. 浏览器打开 https://github.com/kenyanghui/github-pages-workbuddy
+1. 浏览器打开 https://github.com/kenyanghui/rsi-ima-workbuddy-wechat-web
 2. 绿色 `Code` 按钮 → `Download ZIP` → 解压
-3. 把解压出的 `github-pages-workbuddy-main` 改名为 `github-pages-workbuddy`
+3. 把解压出的 `rsi-ima-workbuddy-wechat-web-main` 改名为 `rsi-ima-workbuddy-wechat-web`
 4. 整个文件夹放进 `~/.workbuddy/skills/`（Mac Finder 按 `Cmd+Shift+G` 输入 `~/.workbuddy/skills/` 回车；Windows 在用户目录下建同名路径）
 
 装完重启 WorkBuddy（或新开一个对话），说「**网站体检**」——看到技能名出现在检查结果里就是装好了。
@@ -35,7 +35,7 @@ git clone https://github.com/kenyanghui/github-pages-workbuddy ~/.workbuddy/skil
 
 > **帮我建个人网站**
 
-（或终端 `python3 ~/.workbuddy/skills/github-pages-workbuddy/scripts/setup_wizard.py`）
+（或终端 `python3 ~/.workbuddy/skills/rsi-ima-workbuddy-wechat-web/scripts/setup_wizard.py`）
 
 向导问 6 个问题，然后生成 `~/my-site/`。**双击 `index.html` 就能看到你的站**。
 
@@ -64,5 +64,5 @@ git clone https://github.com/kenyanghui/github-pages-workbuddy ~/.workbuddy/skil
 |------|------|
 | clone 报权限/不存在 | 仓库名拼错了，直接浏览器能打开就说明仓库在 |
 | ~/.workbuddy/skills/ 不存在 | 自己建：`mkdir -p ~/.workbuddy/skills` |
-| 说了「网站体检」没反应 | 技能文件夹名字必须叫 `github-pages-workbuddy`；重启 WorkBuddy |
+| 说了「网站体检」没反应 | 技能文件夹名字必须叫 `rsi-ima-workbuddy-wechat-web`；重启 WorkBuddy |
 | wizard 跑不起来 | 需要 Python 3.8+；终端跑 `python3 --version` 确认 |

@@ -154,7 +154,7 @@ def main():
     site = Path(args.site).expanduser()
 
     print("=" * 46)
-    print("网站体检 github-pages-workbuddy")
+    print("网站体检 rsi-ima-workbuddy-wechat-web")
     print("=" * 46)
     print("[环境]")
     check_env()
