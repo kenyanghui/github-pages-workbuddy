@@ -5,8 +5,8 @@ aliases:
   - GitHub建站
   - 一库一站一号
   - 内容飞轮
-description: 小白友好的 GitHub Pages 个人网站流水线（工作坊版）。以 chai.aibay.asia 的真实搭建史为蓝本：5 分钟生成零依赖个人网站（双击即开、免费上线），IMA 知识库素材一键变网站文章 + 公众号可粘贴排版（双出口），30 天库/站/号飞轮台账。从静态单页起步，随时沿蓝本升级到 React+Actions+自定义域。Use when user mentions "建网站", "个人网站", "GitHub Pages", "上线", "一库一站一号", "网站更新", "发文章到网站", "公众号联动", "内容飞轮", "第二个出口".
-version: 1.0.0
+description: 第二期工作坊主仓技能：IMA 知识库 → 网站(GitHub Pages) + 公众号 + chai 站自动化工作流（「一库一站一号」飞轮）。v2 新增站点体检 site_check（6 项只读检查）与每日定时 Actions 巡检；v1 建站流水线全保留：5 分钟零依赖网站上线、素材双出口、30 天飞轮台账。Use when user mentions "建网站", "个人网站", "GitHub Pages", "上线", "一库一站一号", "网站更新", "发文章到网站", "公众号联动", "内容飞轮", "站点体检", "site_check", "定时巡检".
+version: 2.0.0
 platforms: [darwin, linux, win32]
 prerequisites:
   commands: [python3]
@@ -52,7 +52,9 @@ python3 scripts/setup_wizard.py
 | 发布 / 更新网站 / 自定义域名 | `references/publish.md`（双通道+DNS+验证清单） |
 | IMA 素材进出 / 公众号双出口 / 30 天飞轮 | `references/flywheel.md`（**执行联动任务前必读**） |
 | 想升级站（React/Actions/表单） | `references/blueprint-chai.md`（蓝本演进史，含全部踩坑） |
-| 体检 / 哪里坏了 | `python3 scripts/diagnose.py` |
+| 体检 / 哪里坏了 | `python3 scripts/diagnose.py`（本地站）；`python3 scripts/site_check.py`（chai 站线上体检，只读） |
+| 定时巡检 / Actions | `.github/workflows/site-ops.yml`（每日 09:17 北京自动体检，详见 `docs/CLOSED-LOOP.md`） |
+| 工作坊目标与验收 | `docs/GOALS.md`；闭环设计 `docs/CLOSED-LOOP.md`；v1→v2 升级 `docs/UPGRADE-v2.md` |
 | 兄弟技能联动（公众号 API 推草稿箱） | flywheel.md § 升级出口 |
 
 **路由纪律**：改流程改 references/scripts，不动本文件；站点个人信息只放站点 `config.js`。

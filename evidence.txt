@@ -1,0 +1,66 @@
+# evidence — site_check.py 真实运行证据
+运行时间(UTC): 2026-11-04 02:15:03  主机: iZwz93br1eizasd4tagz0pZ
+
+## 第一次：人类可读模式
+```
+chai 站体检  2026-11-04 10:15:11
+----------------------------------------------------------------
+ ✓ chai-home           1099ms  主站首页 200 且含 <title>（1269B）
+ ✓ chailive-home       2684ms  chailive 首页 200（44631B）
+ ✓ chailive-books      2407ms  chailive 书目页 200 且含 riaComplete（51821B）
+ ✓ chaibuddy-home       582ms  chaibuddy 首页 200（10336B）
+ ✓ chaibuddy-people    1098ms  chaibuddy 数据 people.json 200（37630B）
+ ✓ ai-proxy-ping         35ms  AI 代理健康检查 200 且 ok:true（38B）
+----------------------------------------------------------------
+ 结果: PASS （6/6 项通过）
+exit=0
+```
+
+## 第二次：--json 模式
+```json
+{
+  "ts": 1793758535688,
+  "overall": "fail",
+  "checks": [
+    {
+      "id": "chai-home",
+      "ok": true,
+      "ms": 787,
+      "detail": "主站首页 200 且含 <title>（1269B）"
+    },
+    {
+      "id": "chailive-home",
+      "ok": true,
+      "ms": 1300,
+      "detail": "chailive 首页 200（44631B）"
+    },
+    {
+      "id": "chailive-books",
+      "ok": true,
+      "ms": 700,
+      "detail": "chailive 书目页 200 且含 riaComplete（51821B）"
+    },
+    {
+      "id": "chaibuddy-home",
+      "ok": true,
+      "ms": 582,
+      "detail": "chaibuddy 首页 200（10336B）"
+    },
+    {
+      "id": "chaibuddy-people",
+      "ok": false,
+      "ms": 20392,
+      "detail": "异常: URLError: <urlopen error _ssl.c:989: The handshake operation timed out>"
+    },
+    {
+      "id": "ai-proxy-ping",
+      "ok": true,
+      "ms": 66,
+      "detail": "AI 代理健康检查 200 且 ok:true（38B）"
+    }
+  ]
+}
+exit=1
+```
+
+EVIDENCE-PASS

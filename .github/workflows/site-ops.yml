@@ -1,0 +1,37 @@
+name: site-ops
+
+on:
+  schedule:
+    - cron: '17 1 * * *'  # UTC 01:17 = 北京时间 09:17
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-ops
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 站点体检（site_check）
+        id: sitecheck
+        run: |
+          python3 scripts/site_check.py --json | tee check-result.json
+          echo "result=$(python3 -c 'import json;print(json.load(open("check-result.json"))["overall"])')" >> "$GITHUB_OUTPUT"
+
+      - name: 体检告警（失败时）
+        if: steps.sitecheck.outcome == 'failure'
+        run: |
+          echo "::error title=站点体检失败::每日 09:17（北京）体检未全绿，请查看上方 check-result.json 定位坏项"
+          echo "=============================================="
+          echo " ⚠️  chai 站体检有失败项 —— 修复指引："
+          echo "   1. 看 check-result.json 里 ok=false 的检查项"
+          echo "   2. 按检查项 id 对照 site_check.py 的 CHECKS 定位 URL"
+          echo "   3. 修复后手动 workflow_dispatch 复跑一次确认全绿"
+          echo "=============================================="
