@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write  # v2.2: 体检回流 _rsi_ledger.md 需要写权限
 
 concurrency:
   group: site-ops
@@ -40,6 +40,17 @@ jobs:
       - name: 文档漂移防护（RULES R5）
         if: always()
         run: python3 guards/check_docs_drift.py
+
+      - name: 体检回流 RSI 台账（CLOSED-LOOP 第 5 步，v2.2）
+        if: always() && steps.sitecheck.outcome != 'skipped'
+        run: |
+          git config user.name "site-ops-bot"
+          git config user.email "actions@github.com"
+          RESULT=check-result.json
+          if [ -f check-result-rerun.json ]; then RESULT=check-result-rerun.json; fi
+          python3 scripts/ledger.py "$RESULT"
+          git add _rsi_ledger.md && git commit -m "chore(ops): 体检回流台账 $(date -u +'%Y-%m-%d')" || echo "无变更，跳过"
+          git push
 
       - name: 体检告警（两轮全挂才告警，RULES R3）
         if: steps.sitecheck.outcome == 'failure' && steps.rerun.outcome != 'success'
