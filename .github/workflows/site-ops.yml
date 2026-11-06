@@ -2,11 +2,12 @@ name: site-ops
 
 on:
   schedule:
-    - cron: '17 1 * * *'  # UTC 01:17 = 北京时间 09:17
+    - cron: '17 1 * * *'   # UTC 01:17 = 北京 09:17：每日体检+反馈+雷达
+    - cron: '17 2 * * 1'   # UTC 01 周一 02:17 = 北京 周一 10:17：再加周报
   workflow_dispatch:
 
 permissions:
-  contents: write  # v2.2: 体检回流 _rsi_ledger.md 需要写权限
+  contents: write  # v2.2: 体检回流 _rsi_ledger.md；v3.1: radar/weekly 报告
 
 concurrency:
   group: site-ops
@@ -65,24 +66,45 @@ jobs:
           echo "=============================================="
           exit 1
 
-  radar:
-    # v3.0 兴趣雷达：每日抓四榜热点，命中报告提交仓内 docs/radar-latest.md
-    # （ima 入库由 WorkBuddy 侧「扫热点选题」承接——CI 无 ima 凭据，红线：凭证不进 CI）
+  autopilot:
+    # v3.1 零口令心跳：每日 09:17 反馈+雷达；周一 10:17 加周报。
+    # ima 凭据走 Secrets（IMA_CLIENT_ID/IMA_API_KEY/IMA_KB_ID）；
+    # QQ 邮箱配置走 Secret IMA_EMAIL_JSON。缺哪个环节跳过哪个，心跳不断。
     runs-on: ubuntu-latest
+    needs: check
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 兴趣雷达扫四榜
-        continue-on-error: true
+      - name: 还原邮箱配置
         run: |
-          python3 scripts/interest_radar.py --keywords "AI,拆书,读书,写作,成长" > docs/radar-latest.md 2> radar-stderr.log || true
-          echo "--- stderr ---"; cat radar-stderr.log || true
+          if [ -n "${{ secrets.IMA_EMAIL_JSON }}" ]; then
+            mkdir -p ~/.config/ima
+            printf '%s' '${{ secrets.IMA_EMAIL_JSON }}' > ~/.config/ima/email.json
+          fi
 
-      - name: 雷达报告入库（仓内最新一份）
+      - name: 判断是否周一（周报叠加）
+        id: ismon
+        run: echo "mon=$(date -u +%u)" >> "$GITHUB_OUTPUT"
+
+      - name: autopilot 心跳
+        continue-on-error: true
+        env:
+          IMA_CLIENT_ID: ${{ secrets.IMA_CLIENT_ID }}
+          IMA_API_KEY: ${{ secrets.IMA_API_KEY }}
+          IMA_KB_ID: ${{ secrets.IMA_KB_ID }}
+        run: |
+          if [ "$(date -u +%u)" = "1" ]; then
+            python3 scripts/autopilot.py weekly
+          else
+            python3 scripts/autopilot.py daily
+          fi
+
+      - name: 报告入库（radar/weekly 最新一份）
         run: |
           git config user.name "site-ops-bot"
           git config user.email "actions@github.com"
-          git add docs/radar-latest.md
-          git commit -m "chore(radar): 兴趣雷达扫描 $(date -u +'%Y-%m-%d')" || echo "无变更"
+          git add docs/radar-latest.md docs/weekly-latest.md || true
+          git commit -m "chore(autopilot): 心跳报告 $(date -u +'%Y-%m-%d')" || echo "无变更"
+          git pull --rebase --autostash || git pull --rebase || true
           git push
