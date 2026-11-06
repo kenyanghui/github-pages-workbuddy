@@ -6,3 +6,4 @@
 | 日期 | 结果 | 通过 | 明细（项=ms，复测注明） |
 |---|---|---|---|
 | 2026-11-05 07:54 | PASS | 6/6 | ✓chai-home=388ms；✓chailive-home=354ms；✓chailive-books=149ms；✓chaibuddy-home=140ms；✓chaibuddy-people=155ms；✓ai-proxy-ping=879ms |
+| 2026-11-06 07:54 | PASS | 6/6 | ✓chai-home=221ms；✓chailive-home=578ms；✓chailive-books=478ms；✓chaibuddy-home=111ms；✓chaibuddy-people=229ms；✓ai-proxy-ping=1282ms |
