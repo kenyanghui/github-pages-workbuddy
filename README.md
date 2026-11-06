@@ -37,6 +37,7 @@
 | 体检结果回流 RSI 台账 | `scripts/ledger.py` 由 site-ops 每日自动追加 `_rsi_ledger.md` | 已交付（v2.2） |
 | 反馈回流（QQ 邮箱→ima） | `scripts/feedback_pull.py` 页脚 QQ 邮箱来信 → ima「网站邮箱信息」目录，驱动下轮迭代 | 已交付（v2.3） |
 | **兴趣雷达（ima←全网热点）** | `scripts/interest_radar.py` 站内兴趣 → 微博/知乎/抖音/头条四榜匹配 → ima「热点选题」目录 | 已交付（v3.0） |
+| **双链路回写 ima（WorkBuddy 执行）** | A: 读网站内容→全网热点→「热点选题」；B: 网站反馈→QQ 邮箱→「网站邮箱信息」；底座 `scripts/ima_client.py` | 已交付（v3.2） |
 | **autopilot 零口令心跳** | `scripts/autopilot.py` 每日自动：拉反馈+扫雷达入 ima；周一自动周报；CI Secrets 供凭据 | 已交付（v3.1） |
 
 ## 六项体检明细（site_check.py）
@@ -75,7 +76,7 @@ WorkBuddy 用户直接说「**fork 讲师站**」「**把站换成我的**」「
 
 ```
 rsi-ima-workbuddy-wechat-web/
-├── SKILL.md                  # WorkBuddy 技能定义 v3.1.0（触发词/别名/前置/流程）
+├── SKILL.md                  # WorkBuddy 技能定义 v3.2.0（触发词/别名/前置/流程）
 ├── SETUP.md                  # 安装向导
 ├── README.md                 # 本文件
 ├── evidence.txt              # site_check 实跑证据（逐块标注结论，RULES R2 活样本）

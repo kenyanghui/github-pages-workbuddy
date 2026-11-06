@@ -122,10 +122,15 @@ def render(hits, save):
     txt = "\n".join(lines)
     print(txt)
     if save:
-        print("\nIMA_UPSERT_DIR=" + IMA_DIR_NAME, file=sys.stderr)
-        print("IMA_DOC_BEGIN", file=sys.stderr)
-        print(json.dumps({"title": f"兴趣雷达 {time.strftime('%Y-%m-%d')}", "content": txt}, ensure_ascii=False), file=sys.stderr)
-        print("IMA_DOC_END", file=sys.stderr)
+        # 链路 A 回写：ima「热点选题」目录（独立新建），直连写入
+        try:
+            import ima_client
+            _, name = ima_client.save_to_dir(
+                IMA_DIR_NAME, f"雷达-{time.strftime('%Y%m%d')}.md", txt)
+            print(f"\n✓ 已回写 ima/{IMA_DIR_NAME}/{name}", file=sys.stderr)
+        except Exception as e:
+            print(f"\n✗ ima 回写失败（报告已在上方输出，可重跑）: {str(e)[:100]}", file=sys.stderr)
+            sys.exit(1)
     return len(hits)
 
 

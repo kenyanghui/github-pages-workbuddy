@@ -1,38 +1,45 @@
 #!/usr/bin/env python3
-"""feedback_pull.py — 网站反馈回流：QQ 邮箱 → ima「网站邮箱信息」目录.
+"""feedback_pull.py — 链路 B：网站反馈 → 站长 QQ 邮箱 → ima「网站邮箱信息」.
 
-闭环（docs/CLOSED-LOOP.md 反馈回路）：
-  网站页脚/QQ 邮箱 ← 读者来信 → 本脚本拉取 → 归档 ima「网站邮箱信息」目录
-  → 飞轮周报对账时纳入「读者问得多的」选题信号，驱动下一轮网站迭代。
+闭环：网站页脚/文章尾的 QQ 邮箱反馈入口 ← 读者来信 ← 本脚本（WorkBuddy 调用
+本技能时执行）IMAP 只读拉取 → 逐封写入 ima「网站邮箱信息」目录（独立新建）
+→ 飞轮周报把"待处理"反馈纳入选题，驱动下一轮网站迭代。
 
 用法:
-    python3 scripts/feedback_pull.py --since 7        # 拉近 7 天反馈（默认）
-    python3 scripts/feedback_pull.py --dry-run        # 只列信件不写 ima
-    python3 scripts/feedback_pull.py --print-folders  # 列 ima 目录（确认目录名）
+    python3 scripts/feedback_pull.py                # 拉近 7 天 → 直连写 ima
+    python3 scripts/feedback_pull.py --since 14     # 拉近 14 天
+    python3 scripts/feedback_pull.py --dry-run      # 只列信件不写 ima
+    python3 scripts/feedback_pull.py --mirror       # 同时写本地镜像（供雷达提词）
 
-数据源优先级:
-    1) ima-mcp 连接器（WorkBuddy 内已装，走 MCP 工具调 ima）
-    2) ~/.config/ima/feedback.json（一期同款凭证位；邮箱 IMAP 配置换 ~/.config/ima/email.json）
+配置（~/.config/ima/email.json，QQ 邮箱需先开 IMAP 并生成授权码）:
+    {"host": "imap.qq.com", "port": 993,
+     "user": "你的QQ号@qq.com", "password": "QQ授权码(非登录密码)"}
 
-设计原则：仅标准库；邮箱只读（IMAP fetch，绝不删信，红线同 R4 只读精神）；
-         首次运行自动在 ima 建目录「网站邮箱信息」（已存在则复用）。
+设计原则：仅标准库；邮箱只读（IMAP readonly，绝不删信）；来信原文逐字
+保留（R2 证据真实性）；ima 写入走 ima_client.py（独立目录，幂等可重入）。
 """
 
 import argparse
+import email as em
+import imaplib
 import json
 import sys
 import time
+from email.header import decode_header
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-IMA_DIR_NAME = "网站邮箱信息"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import ima_client
+
+IMA_DIR_NAME = ima_client.DIR_FEEDBACK  # 「网站邮箱信息」
 EMAIL_CFG = Path.home() / ".config" / "ima" / "email.json"
+MIRROR = Path.home() / ".config" / "ima" / "feedback-mirror.json"
 
 DOC_TMPL = """# 反馈 {subject}
 
 - 收件时间: {date}
 - 发件人: {from}
-- 归档: {ts} 由 feedback_pull.py 自动入库
+- 归档: {ts} feedback_pull（链路 B）
 - 状态: 待处理
 
 ## 原文
@@ -51,34 +58,22 @@ def load_email_cfg():
     return json.loads(EMAIL_CFG.read_text(encoding="utf-8"))
 
 
-def pull_via_imap(cfg, since_days, dry):
-    """QQ 邮箱 IMAP 只读拉取。cfg 需含 host/port/user/password(QQ 授权码)。"""
-    import imaplib
-    import email
-    from email.header import decode_header
-
+def pull_via_imap(cfg, since_days):
+    """QQ 邮箱 IMAP 只读拉取（readonly，绝不删信）。"""
     since = time.strftime("%d-%b-%Y", time.gmtime(time.time() - since_days * 86400))
-    box = cfg.get("mailbox", "INBOX")
     m = imaplib.IMAP4_SSL(cfg["host"], cfg.get("port", 993))
     m.login(cfg["user"], cfg["password"])
-    m.select(box, readonly=True)  # 只读，绝不改邮箱状态
+    m.select(cfg.get("mailbox", "INBOX"), readonly=True)
     _, data = m.search(None, f'(SINCE "{since}")')
     msgs = []
     for num in data[0].split():
         _, d = m.fetch(num, "(RFC822)")
-        raw = d[0][1]
-        msg = email.message_from_bytes(raw)
+        msg = em.message_from_bytes(d[0][1])
 
         def dec(v):
-            if not v:
-                return ""
-            parts = decode_header(v)
             out = ""
-            for s, enc in parts:
-                if isinstance(s, bytes):
-                    out += s.decode(enc or "utf-8", "ignore")
-                else:
-                    out += s
+            for s, enc in decode_header(v or ""):
+                out += s.decode(enc or "utf-8", "ignore") if isinstance(s, bytes) else s
             return out
 
         body = ""
@@ -89,43 +84,54 @@ def pull_via_imap(cfg, since_days, dry):
                         part.get_content_charset() or "utf-8", "ignore")
                     break
         else:
-            body = msg.get_payload(decode=True) or b""
-            body = body.decode(msg.get_content_charset() or "utf-8", "ignore") if isinstance(body, bytes) else body
-        msgs.append({
-            "subject": dec(msg.get("Subject", "(无主题)")),
-            "from": dec(msg.get("From", "")),
-            "date": dec(msg.get("Date", "")),
-            "body": body.strip()[:5000],
-        })
+            b = msg.get_payload(decode=True)
+            body = b.decode(msg.get_content_charset() or "utf-8", "ignore") if isinstance(b, bytes) else (b or "")
+        msgs.append({"subject": dec(msg.get("Subject")) or "(无主题)",
+                     "from": dec(msg.get("From")), "date": dec(msg.get("Date")),
+                     "body": body.strip()[:5000]})
     m.logout()
     return msgs
 
 
-def save_via_mcp(msgs, dry):
-    """ima-mcp 通道：打印入库指令，由 WorkBuddy 会话内 MCP 工具执行。"""
+def save_to_ima(msgs, dry):
+    """链路 B 回写：逐封写 ima「网站邮箱信息」目录。"""
+    n_ok = 0
     for i, msg in enumerate(msgs, 1):
         doc = DOC_TMPL.format(ts=time.strftime("%Y-%m-%d %H:%M"), **msg)
+        fname = f"反馈-{time.strftime('%Y%m%d')}-{msg['subject'][:20]}.md"
         if dry:
-            print(f"[dry-run] 第{i}封 将入 ima/{IMA_DIR_NAME}: {msg['subject'][:30]}")
+            print(f"[dry-run] 第{i}封 将写 ima/{IMA_DIR_NAME}/{fname}")
+            n_ok += 1
             continue
-        print(f"IMA_UPSERT_DIR={IMA_DIR_NAME}")
-        print("IMA_DOC_BEGIN")
-        print(json.dumps({"title": f"反馈 {msg['subject'][:40]}", "content": doc}, ensure_ascii=False))
-        print("IMA_DOC_END")
-    return len(msgs)
+        try:
+            _, name = ima_client.save_to_dir(IMA_DIR_NAME, fname, doc)
+            print(f"  ✓ ima/{IMA_DIR_NAME}/{name}")
+            n_ok += 1
+        except Exception as e:
+            print(f"  ✗ 第{i}封写入失败: {str(e)[:100]}", file=sys.stderr)
+    return n_ok
+
+
+def write_mirror(msgs):
+    MIRROR.parent.mkdir(parents=True, exist_ok=True)
+    old = []
+    if MIRROR.exists():
+        try:
+            old = json.loads(MIRROR.read_text(encoding="utf-8"))
+        except Exception:
+            old = []
+    seen = {m["subject"] for m in old}
+    merged = old + [m for m in msgs if m["subject"] not in seen]
+    MIRROR.write_text(json.dumps(merged[-200:], ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"  ✓ 本地镜像 {MIRROR}（{len(merged)} 封，雷达提词用）")
 
 
 def main():
-    ap = argparse.ArgumentParser(description="网站反馈回流（QQ 邮箱 → ima 网站邮箱信息）")
+    ap = argparse.ArgumentParser(description="链路 B：QQ 邮箱反馈 → ima 网站邮箱信息")
     ap.add_argument("--since", type=int, default=7, help="拉取近 N 天（默认 7）")
     ap.add_argument("--dry-run", action="store_true", help="只列不写")
-    ap.add_argument("--print-folders", action="store_true", help="列 ima 目录确认目录名")
+    ap.add_argument("--mirror", action="store_true", help="同时写本地镜像（雷达提词）")
     args = ap.parse_args()
-
-    if args.print_folders:
-        print("请在 WorkBuddy 会话内用 ima-mcp 的列目录工具确认；"
-              "目录不存在时首次入库会自动创建「网站邮箱信息」。")
-        return
 
     cfg = load_email_cfg()
     if not cfg:
@@ -136,13 +142,17 @@ def main():
                           "mailbox": "INBOX"}, ensure_ascii=False, indent=2))
         sys.exit(1)
 
-    msgs = pull_via_imap(cfg, args.since, args.dry)
+    msgs = pull_via_imap(cfg, args.since)
     if not msgs:
         print(f"近 {args.since} 天无反馈信件。")
         return
-    n = save_via_mcp(msgs, args.dry)
-    print(f"{'[dry-run] ' if args.dry else ''}共 {n} 封 → ima「{IMA_DIR_NAME}」"
-          f"（周报对账时纳入选题信号）" if n else "无信件", file=sys.stderr)
+    print(f"拉到 {len(msgs)} 封反馈：")
+    for m in msgs:
+        print(f"  · {m['subject']} ({m['from']})")
+    n = save_to_ima(msgs, args.dry_run)
+    if args.mirror:
+        write_mirror(msgs)
+    print(f"{'[dry-run] ' if args.dry_run else ''}共 {n}/{len(msgs)} 封 → ima「{IMA_DIR_NAME}」（周报对账时纳入选题信号）")
 
 
 if __name__ == "__main__":
