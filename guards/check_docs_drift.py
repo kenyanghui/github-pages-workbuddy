@@ -7,7 +7,7 @@
 断言六项（全过 exit 0，任一失败 exit 1 并逐项指出改哪里）:
   1. README「六项体检明细」表 vs site_check.CHECKS 逐项一致（顺序/id/URL）
   2. README 中文数词（六项/七项…）与 CHECKS 实际总数一致
-  3. 六个 v1/v2 脚本在磁盘上存在
+  3. 七个 v1/v2 脚本在磁盘上存在
   4. SKILL.md version 与 README「技能定义 vX.Y.Z」一致
   5. site-ops.yml 存在且 README 提及
   6. docs/RULES.md 六条规则编号（R1–R6）齐全
@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CN_NUM = {1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七", 8: "八", 9: "九", 10: "十"}
-V1_V2_SCRIPTS = ["setup_wizard.py", "new_post.py", "diagnose.py", "site_check.py", "ledger.py", "feedback_pull.py"]
+V1_V2_SCRIPTS = ["setup_wizard.py", "new_post.py", "diagnose.py", "site_check.py", "ledger.py", "feedback_pull.py", "interest_radar.py"]
 
 
 def fail(msg):
@@ -77,7 +77,7 @@ def main():
 
     # 3. 脚本存在性
     missing = [s for s in V1_V2_SCRIPTS if not (ROOT / "scripts" / s).exists()]
-    results.append(ok(f"断言3: 六脚本齐全 {V1_V2_SCRIPTS}") if not missing else fail(f"断言3: scripts/ 缺 {missing}——README/规则引用了不存在的文件"))
+    results.append(ok(f"断言3: 七脚本齐全 {V1_V2_SCRIPTS}") if not missing else fail(f"断言3: scripts/ 缺 {missing}——README/规则引用了不存在的文件"))
 
     # 4. SKILL 版本一致
     m_skill = re.search(r"^version:\s*(\S+)", skill, re.MULTILINE)

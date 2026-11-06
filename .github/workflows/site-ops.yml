@@ -64,3 +64,25 @@ jobs:
           echo "   4. 修复后手动 workflow_dispatch 复跑一次确认全绿"
           echo "=============================================="
           exit 1
+
+  radar:
+    # v3.0 兴趣雷达：每日抓四榜热点，命中报告提交仓内 docs/radar-latest.md
+    # （ima 入库由 WorkBuddy 侧「扫热点选题」承接——CI 无 ima 凭据，红线：凭证不进 CI）
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 兴趣雷达扫四榜
+        continue-on-error: true
+        run: |
+          python3 scripts/interest_radar.py --keywords "AI,拆书,读书,写作,成长" > docs/radar-latest.md 2> radar-stderr.log || true
+          echo "--- stderr ---"; cat radar-stderr.log || true
+
+      - name: 雷达报告入库（仓内最新一份）
+        run: |
+          git config user.name "site-ops-bot"
+          git config user.email "actions@github.com"
+          git add docs/radar-latest.md
+          git commit -m "chore(radar): 兴趣雷达扫描 $(date -u +'%Y-%m-%d')" || echo "无变更"
+          git push
