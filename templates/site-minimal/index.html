@@ -25,6 +25,7 @@
 
   <footer class="foot">
     <p id="foot-line"></p>
+    <p id="feedback-line"></p>
   </footer>
 </main>
 
@@ -46,6 +47,12 @@
   if (cfg.wechat_account) foot.push('微信搜索「' + cfg.wechat_account + '」看更多');
   foot.push('由 GitHub Pages 免费托管');
   document.getElementById('foot-line').textContent = foot.join(' · ');
+
+  // 反馈入口：QQ 邮箱展示（读者来信经邮箱回流 ima「网站邮箱信息」目录，驱动下一轮迭代）
+  if (cfg.feedback_email && String(cfg.feedback_email).indexOf('example.com') === -1) {
+    var fb = document.getElementById('feedback-line');
+    fb.innerHTML = '有想法想对站长说？<a href="mailto:' + cfg.feedback_email + '">' + cfg.feedback_email + '</a>（QQ 邮箱）';
+  }
 
   var posts = window.POSTS || [];
   var box = document.getElementById('post-list');

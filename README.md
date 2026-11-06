@@ -35,6 +35,7 @@
 | 行为规则库 | `docs/RULES.md` 六条仓规，每条注明层级与立规出处 | 已交付（v2.1） |
 | 内容产线（号侧） | 由一期仓 rsi-ima-workbuddy-wechatpub 承接 | 姊妹仓 |
 | 体检结果回流 RSI 台账 | `scripts/ledger.py` 由 site-ops 每日自动追加 `_rsi_ledger.md` | 已交付（v2.2） |
+| 反馈回流（QQ 邮箱→ima） | `scripts/feedback_pull.py` 页脚 QQ 邮箱来信 → ima「网站邮箱信息」目录，驱动下轮迭代 | 已交付（v2.3） |
 
 ## 六项体检明细（site_check.py）
 
@@ -72,7 +73,7 @@ WorkBuddy 用户直接说「**fork 讲师站**」「**把站换成我的**」「
 
 ```
 rsi-ima-workbuddy-wechat-web/
-├── SKILL.md                  # WorkBuddy 技能定义 v2.2.0（触发词/别名/前置/流程）
+├── SKILL.md                  # WorkBuddy 技能定义 v2.3.0（触发词/别名/前置/流程）
 ├── SETUP.md                  # 安装向导
 ├── README.md                 # 本文件
 ├── evidence.txt              # site_check 实跑证据（逐块标注结论，RULES R2 活样本）

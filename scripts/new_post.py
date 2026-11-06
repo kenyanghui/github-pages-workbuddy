@@ -129,6 +129,12 @@ def article_html(cfg, title, date, body):
         + (f" · 微信搜索 <strong>{html.escape(wechat)}</strong> 看更多" if wechat else "")
         + "</p>"
     )
+    fb_email = cfg.get("feedback_email") or ""
+    if fb_email and "example.com" not in fb_email:
+        cta += (
+            f'<p class="cta feedback">有想法想对站长说？'
+            f'<a href="mailto:{html.escape(fb_email)}">{html.escape(fb_email)}</a>（QQ 邮箱）</p>'
+        )
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>

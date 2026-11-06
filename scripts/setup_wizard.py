@@ -3,7 +3,7 @@
 """个人网站初始化向导 — rsi-ima-workbuddy-wechat-web
 
 用法:
-  python3 setup_wizard.py                 # 交互式，6 个问题
+  python3 setup_wizard.py                 # 交互式，7 个问题
   python3 setup_wizard.py --demo          # 演示模式，全默认值 + 欢迎文章
   python3 setup_wizard.py --dir ~/my-site # 指定站点目录
 """
@@ -21,6 +21,7 @@ DEMO = {
     "wechat_account": "我的公众号",
     "github_user": "your-github-username",
     "repo_name": "my-site",
+    "feedback_email": "your-qq@example.com",
 }
 
 QUESTIONS = [
@@ -30,12 +31,13 @@ QUESTIONS = [
     ("wechat_account", "公众号名（联动用，没有直接回车）"),
     ("github_user", "GitHub 用户名（还没注册就回车，之后可改）"),
     ("repo_name", "GitHub 仓库名（回车默认 my-site）"),
+    ("feedback_email", "QQ 邮箱（网站反馈入口展示用，读者来信回流 ima「网站邮箱信息」目录）"),
 ]
 
 
 def ask(answers: dict, demo: bool) -> dict:
     print("=" * 46)
-    print("个人网站初始化向导（共 6 个问题，回车可用默认值）")
+    print("个人网站初始化向导（共 7 个问题，回车可用默认值）")
     print("=" * 46)
     for key, prompt in QUESTIONS:
         default = DEMO[key] if demo else ""
