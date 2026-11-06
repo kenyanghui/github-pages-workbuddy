@@ -34,6 +34,7 @@ import ima_client
 IMA_DIR_NAME = ima_client.DIR_FEEDBACK  # 「网站邮箱信息」
 EMAIL_CFG = Path.home() / ".config" / "ima" / "email.json"
 MIRROR = Path.home() / ".config" / "ima" / "feedback-mirror.json"
+SEEN = Path.home() / ".config" / "ima" / "feedback-seen.json"  # 已入库去重清单
 
 DOC_TMPL = """# 反馈 {subject}
 
@@ -56,6 +57,25 @@ def load_email_cfg():
     if not EMAIL_CFG.exists():
         return None
     return json.loads(EMAIL_CFG.read_text(encoding="utf-8"))
+
+
+def msg_id(msg):
+    """稳定去重键：主题+发件人+日期（IMAP 无全局 uid，SINCE 窗口滑动会重拉）。"""
+    return f"{msg['subject']}|{msg['from']}|{msg['date']}"
+
+
+def load_seen():
+    if SEEN.exists():
+        try:
+            return set(json.loads(SEEN.read_text(encoding="utf-8")))
+        except Exception:
+            return set()
+    return set()
+
+
+def save_seen(seen):
+    SEEN.parent.mkdir(parents=True, exist_ok=True)
+    SEEN.write_text(json.dumps(sorted(seen)[-500:], ensure_ascii=False, indent=0), encoding="utf-8")
 
 
 def pull_via_imap(cfg, since_days):
@@ -94,9 +114,12 @@ def pull_via_imap(cfg, since_days):
 
 
 def save_to_ima(msgs, dry):
-    """链路 B 回写：逐封写 ima「网站邮箱信息」目录。"""
+    """链路 B 回写：逐封写 ima「网站邮箱信息」目录（_seen 去重，防窗口滑动重拉）。"""
+    seen = load_seen()
+    fresh = [m for m in msgs if msg_id(m) not in seen]
+    dup = len(msgs) - len(fresh)
     n_ok = 0
-    for i, msg in enumerate(msgs, 1):
+    for i, msg in enumerate(fresh, 1):
         doc = DOC_TMPL.format(ts=time.strftime("%Y-%m-%d %H:%M"), **msg)
         fname = f"反馈-{time.strftime('%Y%m%d')}-{msg['subject'][:20]}.md"
         if dry:
@@ -106,9 +129,13 @@ def save_to_ima(msgs, dry):
         try:
             _, name = ima_client.save_to_dir(IMA_DIR_NAME, fname, doc)
             print(f"  ✓ ima/{IMA_DIR_NAME}/{name}")
+            seen.add(msg_id(msg))
+            save_seen(seen)
             n_ok += 1
         except Exception as e:
             print(f"  ✗ 第{i}封写入失败: {str(e)[:100]}", file=sys.stderr)
+    if dup:
+        print(f"  · 跳过 {dup} 封已入库（_seen 去重）")
     return n_ok
 
 
@@ -152,7 +179,7 @@ def main():
     n = save_to_ima(msgs, args.dry_run)
     if args.mirror:
         write_mirror(msgs)
-    print(f"{'[dry-run] ' if args.dry_run else ''}共 {n}/{len(msgs)} 封 → ima「{IMA_DIR_NAME}」（周报对账时纳入选题信号）")
+    print(f"{'[dry-run] ' if args.dry_run else ''}新增 {n}/{len(msgs)} 封 → ima「{IMA_DIR_NAME}」（周报对账时纳入选题信号）")
 
 
 if __name__ == "__main__":

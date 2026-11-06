@@ -45,7 +45,7 @@ def parse_readme_table(readme):
     in_section = False
     for line in readme.splitlines():
         if line.startswith("## "):
-            in_section = "六项体检明细" in line
+            in_section = "体检明细" in line
             continue
         if in_section and line.startswith("| ") and "---" not in line:
             cells = [c.strip() for c in line.strip().strip("|").split("|")]

@@ -5,8 +5,8 @@ aliases:
   - GitHub建站
   - 一库一站一号
   - 内容飞轮
-description: 第二期工作坊主仓技能：IMA 知识库 → 网站(GitHub Pages) + 公众号 + chai 站自动化工作流（「一库一站一号」飞轮）。v2 新增站点体检 site_check（6 项只读检查）与每日定时 Actions 巡检；v1 建站流水线全保留：5 分钟零依赖网站上线、素材双出口、30 天飞轮台账。Use when user mentions "建网站", "个人网站", "GitHub Pages", "上线", "一库一站一号", "网站更新", "发文章到网站", "公众号联动", "内容飞轮", "站点体检", "site_check", "定时巡检", "拉网站反馈", "网站反馈", "读者来信", "兴趣雷达", "抓热点", "热点选题", "自动迭代".
-version: 3.2.0
+description: 第二期工作坊主仓技能：IMA 知识库 → 网站(GitHub Pages) + 公众号 + chai 站自动化工作流（「一库一站一号」飞轮）。v2 新增站点体检 site_check（7 项只读检查）与每日定时 Actions 巡检；v1 建站流水线全保留：5 分钟零依赖网站上线、素材双出口、30 天飞轮台账。Use when user mentions "建网站", "个人网站", "GitHub Pages", "上线", "一库一站一号", "网站更新", "发文章到网站", "公众号联动", "内容飞轮", "站点体检", "site_check", "定时巡检", "拉网站反馈", "网站反馈", "读者来信", "兴趣雷达", "抓热点", "热点选题", "自动迭代".
+version: 3.3.0
 platforms: [darwin, linux, win32]
 prerequisites:
   commands: [python3]

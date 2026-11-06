@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write  # v2.2: 体检回流 _rsi_ledger.md；v3.1: radar/weekly 报告
+  issues: write    # v3.3: 体检持续故障自动开 Issue 告警；周报 Issue 推批阅
 
 concurrency:
   group: site-ops
@@ -53,17 +54,33 @@ jobs:
           git add _rsi_ledger.md && git commit -m "chore(ops): 体检回流台账 $(date -u +'%Y-%m-%d')" || echo "无变更，跳过"
           git push
 
-      - name: 体检告警（两轮全挂才告警，RULES R3）
+      - name: 体检告警（两轮全挂才告警，RULES R3；v3.3 起自动开 Issue）
         if: steps.sitecheck.outcome == 'failure' && steps.rerun.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "::error title=站点体检失败::首轮+二轮复测均未全绿，判定持续故障（非抖动）"
-          echo "=============================================="
-          echo " ⚠️  chai 站体检持续故障 —— 修复指引："
-          echo "   1. 看 check-result.json 与 check-result-rerun.json 里 ok=false 的检查项"
-          echo "   2. 若两轮失败项不同 → 仍疑似抖动，手动 workflow_dispatch 再复跑一轮"
-          echo "   3. 若失败项一致 → 按 id 对照 site_check.py 的 CHECKS 定位 URL 修复"
-          echo "   4. 修复后手动 workflow_dispatch 复跑一次确认全绿"
-          echo "=============================================="
+          # 汇总失败项
+          FAILS=$(python3 - <<'PY'
+          import json
+          for f in ("check-result.json", "check-result-rerun.json"):
+              try:
+                  d = json.load(open(f))
+                  bad = [c["id"] for c in d.get("checks", []) if not c["ok"]]
+                  if bad: print(f"{f}: " + ", ".join(bad))
+              except Exception: pass
+          PY
+          )
+          # 开 Issue（同日去重：搜当日同标题未关闭 Issue）
+          TITLE="⚠️ 站点体检持续故障 $(date -u +'%Y-%m-%d')"
+          BODY="## 两轮复测均未全绿（判定持续故障，非抖动）$(printf '\n%s\n' "$FAILS")修复指引：看 Actions 日志 check-result*.json 里 ok=false 的检查项，按 id 对照 scripts/site_check.py 的 CHECKS 定位 URL；修复后手动 workflow_dispatch 复跑确认全绿，然后关闭本 Issue。"
+          EXISTS=$(gh issue list --state open --search "$TITLE" --json number --jq 'length')
+          if [ "$EXISTS" = "0" ]; then
+            gh issue create --title "$TITLE" --body "$BODY"
+            echo "已开告警 Issue（GitHub 会邮件通知 watcher）"
+          else
+            echo "当日告警 Issue 已存在，不重复开"
+          fi
           exit 1
 
   autopilot:
@@ -104,7 +121,26 @@ jobs:
         run: |
           git config user.name "site-ops-bot"
           git config user.email "actions@github.com"
-          git add docs/radar-latest.md docs/weekly-latest.md || true
+          git add docs/radar-latest.md docs/weekly-latest.md docs/radar-history.md || true
           git commit -m "chore(autopilot): 心跳报告 $(date -u +'%Y-%m-%d')" || echo "无变更"
           git pull --rebase --autostash || git pull --rebase || true
           git push
+
+      - name: 周报 Issue 推批阅（v3.3，站长批阅位）
+        if: steps.ismon.outputs.mon == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 当日确有新周报才开（防非周报日手动重跑误开）
+          TODAY=$(date -u +'%Y-%m-%d')
+          if ! grep -q "飞轮周报 · ${TODAY}" docs/weekly-latest.md 2>/dev/null; then
+            echo "今日无新周报，跳过"; exit 0
+          fi
+          TITLE="📋 飞轮周报待批阅 ${TODAY}"
+          EXISTS=$(gh issue list --state open --search "$TITLE" --json number --jq 'length')
+          if [ "$EXISTS" = "0" ]; then
+            gh issue create --title "$TITLE" --body-file docs/weekly-latest.md
+            echo "已开周报 Issue（GitHub 通知 watcher，勾选 1-2 条选题进下周池后关闭）"
+          else
+            echo "当日周报 Issue 已存在，不重复开"
+          fi

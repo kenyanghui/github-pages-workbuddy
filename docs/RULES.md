@@ -50,8 +50,8 @@
 
 **README/文档中声称的「数量、清单、版本」必须能被 guards 脚本断言；改了事实必须改文档，改了文档必须过 guard。**
 
-- `python3 guards/check_docs_drift.py` 六项断言：README 六项体检表 vs
-  site_check.CHECKS 逐项一致、CHECKS 总数、四个脚本存在性、SKILL version 与
+- `python3 guards/check_docs_drift.py` 六项断言：README 体检明细表 vs
+  site_check.CHECKS 逐项一致、CHECKS 总数（中文数词联动）、九个脚本存在性、SKILL version 与
   README 一致、workflows 存在、RULES 六条编号齐全。
 - CI 已接线（site-ops.yml 漂移防护步，`if: always()` 体检结果不影响其执行）；
   本地改文档后手动跑一次。

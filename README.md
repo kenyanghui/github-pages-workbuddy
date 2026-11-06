@@ -8,7 +8,7 @@
 - **一期（rsi-ima-workbuddy-wechatpub）管「号」**：IMA 知识库 → 公众号内容工厂，九步流水线日更三篇进草稿箱，绝不自动群发。
 - **二期（本仓）管「站」**：WorkBuddy 直接操作 GitHub——建站、发布、体检、定时巡检，同一个 RSI 范式从「号」扩展到「站」。
 
-## 总体思路：一库两出口，闭环自己转（v3.2 定稿）
+## 总体思路：一库两出口，闭环自己转（v3.2 定稿，v3.3 精修）
 
 **IMA 知识库是唯一源头**。出方向参照一期仓（rsi-ima-workbuddy-wechatpub）的九步流水线范式——从库里挖素材写成的文章，发布到网站（new_post 双出口：网站文章 + 公众号粘贴版）；回方向是本仓 v3 的灵魂——两条链路定期把外部信号回写 ima 各自独立目录，WorkBuddy 调用本技能自主判断网站下一篇加什么内容：
 
@@ -68,7 +68,7 @@
 | 建站 | `scripts/setup_wizard.py` 向导 + `templates/site-minimal` 单文件模板（config.js/index.html/posts.js/style.css，零依赖双击可开） | 已交付（v1） |
 | 发文 | `scripts/new_post.py "标题"` 生成文章 → push main → Actions 自动上线 | 已交付（v1） |
 | 诊断 | `scripts/diagnose.py` 环境自检（技能是否装好、依赖是否齐） | 已交付（v1） |
-| 站点体检 | `scripts/site_check.py` 六项只读检查，支持 `--json`（exit 0=全过，供 CI 判定）与 `--retry`（失败项隔 10s 复测一次再定性） | 已交付（v2.1） |
+| 站点体检 | `scripts/site_check.py` 七项只读检查，支持 `--json`（exit 0=全过，供 CI 判定）与 `--retry`（失败项隔 10s 复测一次再定性） | 已交付（v2.1，v3.3 增第 7 项） |
 | 定时巡检 | `.github/workflows/site-ops.yml` 每日 09:17（北京时间）自动体检，首轮 fail 隔 60s 二轮复测，两轮全挂才告警 | 已交付（v2.1） |
 | 文档漂移防护 | `guards/check_docs_drift.py` 六项断言（README 声称 vs 仓库实际），CI 已接线 | 已交付（v2.1） |
 | 行为规则库 | `docs/RULES.md` 六条仓规，每条注明层级与立规出处 | 已交付（v2.1） |
@@ -78,8 +78,9 @@
 | **兴趣雷达（ima←全网热点）** | `scripts/interest_radar.py` 站内兴趣 → 微博/知乎/抖音/头条四榜匹配 → ima「热点选题」目录 | 已交付（v3.0） |
 | **双链路回写 ima（WorkBuddy 执行）** | A: 读网站内容→全网热点→「热点选题」；B: 网站反馈→QQ 邮箱→「网站邮箱信息」；底座 `scripts/ima_client.py` | 已交付（v3.2） |
 | **autopilot 零口令心跳** | `scripts/autopilot.py` 每日自动：拉反馈+扫雷达入 ima；周一自动周报；CI Secrets 供凭据 | 已交付（v3.1） |
+| **闭环自进化精修** | 反馈 `_seen` 去重防重拉；雷达降噪（相似度过滤+热度排序）+历史沉淀 `docs/radar-history.md`；体检两轮全挂自动开 Issue；周一周报自动开 Issue 推批阅；周报对账含站内文章计数 | 已交付（v3.3） |
 
-## 六项体检明细（site_check.py）
+## 七项体检明细（site_check.py）
 
 | # | 检查项 | 目标 | 判定 |
 |---|---|---|---|
@@ -89,6 +90,7 @@
 | 4 | chaibuddy-home | `https://www.aibay.asia/chaibuddy/` | 200 |
 | 5 | chaibuddy-people | `https://www.aibay.asia/chaibuddy/data/people.json` | 200 |
 | 6 | ai-proxy-ping | `https://dopenclaw.aibay.asia/cl2-ai/ping` | 200 且 `ok:true` |
+| 7 | chai-tf-assess | `https://chai.aibay.asia/tf-assess/` | 200 且含 `<title>`（内容页抽测） |
 
 全部只读（GET + 15s 超时），不碰任何生产数据；换自己站点只需改脚本顶部 `CHECKS` 列表。
 
@@ -115,7 +117,7 @@ WorkBuddy 用户直接说「**fork 讲师站**」「**把站换成我的**」「
 
 ```
 rsi-ima-workbuddy-wechat-web/
-├── SKILL.md                  # WorkBuddy 技能定义 v3.2.0（触发词/别名/前置/流程）
+├── SKILL.md                  # WorkBuddy 技能定义 v3.3.0（触发词/别名/前置/流程）
 ├── SETUP.md                  # 安装向导
 ├── README.md                 # 本文件
 ├── evidence.txt              # site_check 实跑证据（逐块标注结论，RULES R2 活样本）
@@ -152,7 +154,7 @@ rsi-ima-workbuddy-wechat-web/
 | 维度 | v1（github-pages-workbuddy） | v2（本仓现名） |
 |---|---|---|
 | 定位 | 小白 GitHub Pages 建站技能 | 一库一站一号飞轮的「站」侧主仓 |
-| 新增 | — | site_check 六项体检、site-ops 每日 Actions、GOALS/CLOSED-LOOP/UPGRADE 三文档 |
+| 新增 | — | site_check 七项体检、site-ops 每日 Actions、GOALS/CLOSED-LOOP/UPGRADE 三文档 |
 | 保留 | 建站/发文/诊断全套 | 全部保留，接口不变 |
 
 改名后旧地址自动重定向；本地已有 clone 的用

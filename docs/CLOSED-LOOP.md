@@ -21,7 +21,7 @@
                                               ▼
                                     ┌──────────────────┐
                                     │ site_check 线上体检 │◄─── 每日 09:17
-                                    │ （只读，6 项）       │     site-ops Actions
+                                    │ （只读，7 项）       │     site-ops Actions
                                     └────────┬─────────┘
                                              ▼
                                    ┌───────────────────┐
@@ -37,7 +37,7 @@
 1. **产出**：学员在 IMA 知识库沉淀拆书笔记；WorkBuddy 技能把库内容变成两出口产物——公众号文稿（一期）与站点文章（二期 `new_post.py`）。
 2. **提交**：站点文章 push main（或 PR）；每篇文章一个 commit，可追溯。
 3. **构建部署**：GitHub Actions 自动构建部署（chai 站即此模式：push main → vite build → Pages）。
-4. **线上体检**：`site_check.py` 只读检查 6 项——主站 200+title、chailive 首页、chailive 书目页（含 riaComplete）、chaibuddy 首页与 people.json、AI 代理健康（/cl2-ai/ping 回 ok:true）。每日 09:17（北京）由 site-ops Actions 定时执行，失败输出中文告警块。
+4. **线上体检**：`site_check.py` 只读检查 7 项——主站 200+title、chailive 首页、chailive 书目页（含 riaComplete）、chaibuddy 首页与 people.json、AI 代理健康（/cl2-ai/ping 回 ok:true）、内容页抽测（/tf-assess/，chai 站为 Vite SPA 无 posts 目录页，抽实测存在的内容页）。每日 09:17（北京）由 site-ops Actions 定时执行，两轮全挂自动开 Issue 告警。
 5. **回流 RSI 台账**：体检结果（过/挂、耗时、坏链）增量记入 `_rsi_ledger.md`——同一家台账同时服务号与站，这是「一库一站一号」闭环的闭合点。
 6. **改进**：下一轮按台账教训改进（如坏链高发路径加预检、内容节奏按读者数据调整）。
 

@@ -68,6 +68,41 @@ git clone https://github.com/kenyanghui/rsi-ima-workbuddy-wechat-web ~/.workbudd
 
 技能会生成：网站文章页（自动更新首页列表）+ `_local/` 里的公众号粘贴版（浏览器打开 → 全选复制 → 粘进公众号编辑器）。
 
+## 第 5 步：激活自进化闭环（v3，可选但强烈推荐）
+
+做完这步，网站开始自己转：每日自动「读网站内容找全网热点 + 收 QQ 邮箱反馈」回写 ima，周一自动出周报。三项配置做几项转几项，缺哪项跳哪项（心跳不断）。
+
+**① ima 凭据（链路 A/B 共用）**：ima.qq.com → 设置 → 开放 API → 创建，得 Client ID + API Key：
+
+```bash
+mkdir -p ~/.config/ima
+echo -n '你的ClientID' > ~/.config/ima/client_id
+echo -n '你的APIKey'   > ~/.config/ima/api_key
+```
+
+配好后对 WorkBuddy 说「**扫热点选题**」——看到 `✓ 已回写 ima/热点选题/雷达-….md` 即通。
+
+**② QQ 邮箱（链路 B）**：QQ 邮箱网页版 → 设置 → 账号 → 开启 IMAP 服务并生成**授权码**（不是登录密码），然后：
+
+```bash
+cat > ~/.config/ima/email.json <<'EOF'
+{"host": "imap.qq.com", "port": 993,
+ "user": "你的QQ号@qq.com", "password": "刚生成的授权码", "mailbox": "INBOX"}
+EOF
+```
+
+配好后对 WorkBuddy 说「**拉网站反馈**」验证。网站页脚的反馈入口邮箱用建站向导第 7 问填的同一个 QQ 邮箱。
+
+**③ CI Secrets（WorkBuddy 不在线也转，可选）**：你的网站仓库 → Settings → Secrets and variables → Actions → New repository secret，逐个加：
+
+| Secret 名 | 值 |
+|---|---|
+| `IMA_CLIENT_ID` / `IMA_API_KEY` | 同 ① |
+| `IMA_KB_ID` | 你的知识库 id（WorkBuddy 说「查我的 ima 知识库 id」可得） |
+| `IMA_EMAIL_JSON` | ② 那段 email.json 的**整段 JSON 文本** |
+
+配完后仓库 Actions 手动跑一次 `site-ops`（workflow_dispatch）确认绿灯。
+
 ## 常见安装问题
 
 | 症状 | 解法 |

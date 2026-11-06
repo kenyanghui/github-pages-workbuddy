@@ -30,6 +30,9 @@ CHECKS = [
     {"id": "chaibuddy-home", "url": "https://www.aibay.asia/chaibuddy/", "expect": "status", "desc": "chaibuddy 首页 200"},
     {"id": "chaibuddy-people", "url": "https://www.aibay.asia/chaibuddy/data/people.json", "expect": "status", "desc": "chaibuddy 数据 people.json 200"},
     {"id": "ai-proxy-ping", "url": "https://dopenclaw.aibay.asia/cl2-ai/ping", "expect": "status+ok-true", "desc": "AI 代理健康检查 200 且 ok:true"},
+    # 第 7 项：内容页抽测。chai 站是 Vite SPA，无 posts/*.html 目录型文章页
+    # （实测 /posts/ 404），故抽测实测存在的互动内容页 /tf-assess/（过级自评表）。
+    {"id": "chai-tf-assess", "url": "https://chai.aibay.asia/tf-assess/", "expect": "status+title", "desc": "内容页抽测 tf-assess 200 且含 <title>"},
 ]
 
 

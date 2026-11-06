@@ -89,19 +89,41 @@ def feedback_keywords():
     return set()
 
 
-def match(keywords, boards):
-    hits = []
+def site_titles(site_dir):
+    """站内已有文章标题（相似度过滤用，写过的热点不再推）。"""
+    posts_js = site_dir / "posts.js"
+    if posts_js.exists():
+        return re.findall(r'"title":\s*"([^"]+)"', posts_js.read_text(encoding="utf-8"))
+    return []
+
+
+def similarity(a, b):
+    """粗粒度相似度：2-gram 重合率（Jaccard），>0.35 视为写过同题。"""
+    def grams(s):
+        s = re.sub(r"[^\w\u4e00-\u9fff]", "", s.lower())
+        return {s[i:i+2] for i in range(len(s) - 1)} or {s}
+    ga, gb = grams(a), grams(b)
+    return len(ga & gb) / len(ga | gb)
+
+
+def match(keywords, boards, site_titles=()):
+    """命中 + 降噪：相似度过滤（写过的不再推）+ 热度加权排序。"""
+    raw = []
     for ep, items in boards.items():
         for it in items:
             title = it.get("title", "")
             for kw in keywords:
                 pats = TOPIC_EXPANSION.get(kw, [kw])
                 if any(p.lower() in title.lower() for p in pats):
-                    hits.append({
+                    raw.append({
                         "kw": kw, "board": ep, "title": title,
                         "link": it.get("link", ""), "hot": it.get("hot_value", 0),
                     })
                     break
+    # 降噪 1：与站内已有文章标题相似度过高 → 写过，不再推
+    hits = [h for h in raw
+            if not any(similarity(h["title"], t) > 0.35 for t in site_titles)]
+    # 降噪 2：热度加权排序（知乎热榜 hot=0 时按板面出现序兜底，不挤占前排）
     hits.sort(key=lambda h: -h["hot"])
     return hits
 
@@ -166,7 +188,7 @@ def main():
             print(f"✓ {ep} {len(boards[ep])} 条", file=sys.stderr)
         except Exception as e:
             print(f"✗ {ep} 拉取失败: {str(e)[:60]}（跳过，不算故障——R3 抖动口径）", file=sys.stderr)
-    hits = match(keywords, boards)
+    hits = match(keywords, boards, site_titles=site_titles(Path(args.site_dir)))
     render(hits, args.save)
 
 

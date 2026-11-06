@@ -94,6 +94,24 @@ def beat_feedback():
     return f"ok: {n}/{len(msgs)} 封入 ima/{KB_DIR['feedback']}"
 
 
+def append_radar_history(hits):
+    """雷达历史沉淀：每日一行进 docs/radar-history.md（radar-latest 只留最新，历史可回溯趋势）。"""
+    hist = ROOT / "docs/radar-history.md"
+    top = hits[0]["title"] if hits else "（无命中）"
+    kws = "、".join(sorted({h["kw"] for h in hits[:10]})) or "-"
+    row = f"| {time.strftime('%Y-%m-%d')} | {len(hits)} | {top} | {kws} |"
+    if hist.exists():
+        lines = hist.read_text(encoding="utf-8").rstrip("\n").splitlines()
+        # 同日重跑覆盖当日行（幂等）
+        lines = [l for l in lines if not l.startswith(f"| {time.strftime('%Y-%m-%d')} ")] if lines and "| 日期 |" in lines[0] else lines
+    else:
+        lines = ["| 日期 | 命中 | 当日 Top1 | 命中词 |", "|---|---|---|---|"]
+    lines.append(row)
+    if len(lines) > 202:  # 表头 2 行 + 保留最近 200 天
+        lines = lines[:2] + lines[-200:]
+    hist.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def beat_radar(keywords_fallback="AI,拆书,读书,写作,成长"):
     """四榜 → 匹配 → ima 热点选题 + 仓内 docs/radar-latest.md。"""
     sys.path.insert(0, str(ROOT / "scripts"))
@@ -110,7 +128,7 @@ def beat_radar(keywords_fallback="AI,拆书,读书,写作,成长"):
             boards[ep] = ir.fetch_board(ep)
         except Exception as e:
             print(f"  {ep} 拉取失败（跳过，R3）: {str(e)[:60]}", file=sys.stderr)
-    hits = ir.match(kws, boards)
+    hits = ir.match(kws, boards, site_titles=ir.site_titles(Path.home() / "my-site"))
     report = "\n".join([
         f"# 兴趣雷达 · {time.strftime('%Y-%m-%d %H:%M')} 扫描（autopilot）", "",
         f"关键词: {', '.join(sorted(kws))}", "",
@@ -119,6 +137,7 @@ def beat_radar(keywords_fallback="AI,拆书,读书,写作,成长"):
         "", "## 下一步", "",
         "高热+站内有素材的优先；对 WorkBuddy 说「按雷达发一篇」", ""])
     (ROOT / "docs/radar-latest.md").write_text(report, encoding="utf-8")
+    append_radar_history(hits)
     if hits:
         try:
             kb = ima_client.kb_id()
@@ -135,14 +154,20 @@ def beat_weekly():
     ledger = ROOT / "_rsi_ledger.md"
     radar = ROOT / "docs/radar-latest.md"
     lines = [f"# 飞轮周报 · {time.strftime('%Y-%m-%d')}（autopilot 自动生成）", ""]
-    # 1) 对账：近 7 天台账行
+    # 1) 对账：近 7 天台账行 + 站内文章计数（posts.js）
     week_rows = []
     if ledger.exists():
         for ln in ledger.read_text(encoding="utf-8").splitlines():
             if ln.startswith("| 202") and ln >= f"| {time.strftime('%Y-%m-%d', time.gmtime(time.time()-7*86400))}":
                 week_rows.append(ln)
     pass_n = sum(1 for r in week_rows if "| PASS |" in r)
-    lines += [f"## 一、对账（近 7 天体检 {pass_n}/{len(week_rows)} 天 PASS）", ""]
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import interest_radar as _ir
+    site_titles = _ir.site_titles(Path.home() / "my-site")
+    lines += [f"## 一、对账（近 7 天体检 {pass_n}/{len(week_rows)} 天 PASS · 站内文章累计 {len(site_titles)} 篇）", ""]
+    if site_titles:
+        recent = "、".join(site_titles[-3:])
+        lines += [f"最近 3 篇：{recent}", ""]
     lines += week_rows[-7:] + [""]
     # 2) 雷达 top5
     lines += ["## 二、雷达热点 Top5", ""]
